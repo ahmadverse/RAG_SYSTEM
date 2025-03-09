@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- AOS Library for animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #4a7bff;
+            --secondary-color: #6c757d;
+            --accent-color: #3a5ccc;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f5f7ff;
+        }
+        
+        .main-content {
+            flex: 1;
+        }
+        
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-container:hover {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .chat-window {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 18px;
+            border-radius: 20px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease;
+            position: relative;
+            clear: both;
+        }
+        
+        .user-message {
+            background-color: var(--primary-color);
+            color: white;
+            float: right;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot-message {
+            background-color: #e9ecef;
+            color: var(--dark-color);
+            float: left;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message-time {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+        }
+        
+        .bot-message .message-time {
+            color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background-color: white;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid #ced4da;
+            border-radius: 50px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .chat-input input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(74, 123, 255, 0.25);
+        }
+        
+        .send-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            margin-left: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .send-btn:hover {
+            background-color: var(--accent-color);
+            transform: scale(1.05);
+        }
+        
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 20px;
+            float: left;
+            clear: both;
+            margin-bottom: 15px;
+        }
+        
+        .typing-indicator span {
+            height: 10px;
+            width: 10px;
+            margin: 0 1px;
+            background-color: #9e9ea1;
+            display: inline-block;
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: typing 1s infinite;
+        }
+        
+        .typing-indicator span:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes typing {
+            0% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0.4; transform: scale(1); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 30px 0;
+            margin-top: 30px;
+        }
+        
+        .feature-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .wave-animation {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .wave-animation::before {
+            content: "";
+            position: absolute;
+            width: 150%;
+            height: 100px;
+            bottom: -70px;
+            left: -25%;
+            background: white;
+            border-radius: 50%;
+            animation: wave 10s linear infinite;
+        }
+        
+        @keyframes wave {
+            0% { transform: translateX(0) rotate(0); }
+            100% { transform: translateX(-50%) rotate(360deg); }
+        }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            margin: 20px auto;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header wave-animation">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6" data-aos="fade-right">
+                    <h1 class="display-4 fw-bold">AI Chatbot</h1>
+                    <p class="lead">Powered by LlamaIndex and Groq LLM</p>
+                </div>
+                <div class="col-md-6" data-aos="fade-left">
+                    <div class="text-center">
+                        <i class="fas fa-robot text-light pulse-animation" style="font-size: 6rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="main-content container py-4">
+        <div class="row mb-4">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>Intelligent</h3>
+                    <p>Powered by state-of-the-art language models to provide accurate and helpful responses.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Fast</h3>
+                    <p>Get instant responses to your questions with optimized performance.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3>Knowledgeable</h3>
+                    <p>Retrieves information from your documents to provide contextual answers.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Container -->
+        <div class="chat-container" data-aos="zoom-in">
+            <div class="chat-header">
+                <h4 class="m-0"><i class="fas fa-comment-dots me-2"></i> Chat with AI</h4>
+            </div>
+            <div class="chat-window" id="chatWindow">
+                <div class="bot-message message">
+                    <p>Hello! I'm your AI assistant. How can I help you today?</p>
+                    <span class="message-time" id="initialTime"></span>
+                </div>
+                <div class="typing-indicator" id="typingIndicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="loading-spinner" id="loadingSpinner"></div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="userInput" placeholder="Type your message here..." aria-label="Type your message">
+                <button class="send-btn" id="sendBtn" title="Send message">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6" data-aos="fade-right">
+                    <h5>About This Chatbot</h5>
+                    <p>This AI chatbot uses LlamaIndex and Groq to provide intelligent responses based on your documents. It leverages vector search and large language models for accurate information retrieval.</p>
+                </div>
+                <div class="col-md-3" data-aos="fade-up">
+                    <h5>Features</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check me-2"></i> Document Retrieval</li>
+                        <li><i class="fas fa-check me-2"></i> Natural Language Processing</li>
+                        <li><i class="fas fa-check me-2"></i> Context-Aware Responses</li>
+                    </ul>
+                </div>
+                <div class="col-md-3" data-aos="fade-left">
+                    <h5>Technologies</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-code me-2"></i> Flask</li>
+                        <li><i class="fas fa-layer-group me-2"></i> LlamaIndex</li>
+                        <li><i class="fas fa-cloud me-2"></i> Groq LLM</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="mt-4 mb-4" style="border-color: rgba(255,255,255,0.1);">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0">&copy; 2025 AI Chatbot. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- AOS Library for animations -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <script>
+        // Initialize AOS animation
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
+            });
+            
+            // Set initial message time
+            document.getElementById('initialTime').textContent = formatTime(new Date());
+            
+            // Setup chat functionality
+            const chatWindow = document.getElementById('chatWindow');
+            const userInput = document.getElementById('userInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const typingIndicator = document.getElementById('typingIndicator');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            
+            // Function to format time
+            function formatTime(date) {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            // Function to add a message to the chat window
+            function addMessage(text, isUser = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = isUser ? 'user-message message' : 'bot-message message';
+                
+                const messageText = document.createElement('p');
+                messageText.textContent = text;
+                messageDiv.appendChild(messageText);
+                
+                const timeSpan = document.createElement('span');
+                timeSpan.className = 'message-time';
+                timeSpan.textContent = formatTime(new Date());
+                messageDiv.appendChild(timeSpan);
+                
+                chatWindow.appendChild(messageDiv);
+                
+                // Scroll to the bottom of the chat window
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+            
+            // Function to show typing indicator
+            function showTypingIndicator() {
+                typingIndicator.style.display = 'block';
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+            
+            // Function to hide typing indicator
+            function hideTypingIndicator() {
+                typingIndicator.style.display = 'none';
+            }
+            
+            // Function to show loading spinner
+            function showLoadingSpinner() {
+                loadingSpinner.style.display = 'block';
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+            
+            // Function to hide loading spinner
+            function hideLoadingSpinner() {
+                loadingSpinner.style.display = 'none';
+            }
+            
+            // Function to send message to the server
+            async function sendMessage(text) {
+                if (!text.trim()) return;
+                
+                // Add user message to chat
+                addMessage(text, true);
+                
+                // Clear input field
+                userInput.value = '';
+                
+                // Show typing indicator briefly for UI feedback
+                showTypingIndicator();
+                
+                // Show loading spinner for actual processing time
+                showLoadingSpinner();
+                
+                try {
+                    const response = await fetch('/ask', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ question: text }),
+                    });
+                    
+                    const data = await response.json();
+                    
+                    // Hide indicators
+                    hideTypingIndicator();
+                    hideLoadingSpinner();
+                    
+                    if (data.success) {
+                        // Add bot response to chat
+                        addMessage(data.answer);
+                    } else {
+                        // Show error message
+                        addMessage("Sorry, I encountered an error: " + (data.error || "Unknown error"));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    hideTypingIndicator();
+                    hideLoadingSpinner();
+                    addMessage("Sorry, I couldn't process your request. Please try again later.");
+                }
+            }
+            
+            // Event listener for send button
+            sendBtn.addEventListener('click', () => {
+                sendMessage(userInput.value);
+            });
+            
+            // Event listener for Enter key
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage(userInput.value);
+                }
+            });
+            
+            // Focus input field on load
+            userInput.focus();
+        });
+    </script>
+</body>
+</html>
